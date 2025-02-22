@@ -1,0 +1,211 @@
+create table users(
+    id serial primary key,
+    first_name varchar,
+    last_name varchar,
+    email varchar,
+    password varchar,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+);
+create table profiles(
+    user_id int references users(id) on delete cascade ,
+    bio text,
+    contact_number varchar,
+    avatar text
+);
+create table roles(
+    id serial primary key ,
+    role_name varchar
+);
+create table userRoles(
+    user_id int references users(id) on delete cascade ,
+    role_id int references roles(id) on delete cascade
+);
+create table courses(
+    id serial primary key ,
+    title varchar,
+    description varchar,
+    instructor_id int references users(id),
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+);
+create table categories(
+    id serial primary key ,
+    name varchar,
+    description varchar
+);
+create table courseCategories(
+    course_id int references courses(id) on delete cascade ,
+    category_id int references categories(id) on delete cascade
+);
+create table modules(
+    id serial primary key ,
+    course_id int references courses(id) on delete cascade ,
+    title varchar,
+    description varchar,
+    order_index varchar
+);
+create table lessons(
+    id serial primary key ,
+    module_id int references modules(id) on delete cascade,
+    title varchar,
+    content varchar,
+    video_url text,
+    order_index varchar
+);
+create table resources(
+    id serial primary key,
+    lesson_id int references lessons(id) on delete cascade ,
+    resource_type varchar,
+    resource_url text,
+    description varchar
+);
+create table enrollments(
+    id serial primary key ,
+    user_id int references users(id) on delete cascade ,
+    course_id int references courses(id) on delete cascade ,
+    enrolled_at timestamptz default now()
+);
+create table progress(
+    id serial primary key ,
+    enrollment_id int references enrollments(id) on delete cascade ,
+    lesson_id int references lessons(id) on delete cascade ,
+    completed bool,
+    completed_at timestamptz default now()
+);
+create table assignments(
+    id serial primary key ,
+    course_id int references courses(id) on delete cascade ,
+    title varchar,
+    description varchar,
+    due_date date
+);
+create table assignmentSubmissions(
+    id serial primary key ,
+    assignment_id int references assignments(id) on delete cascade ,
+    user_id int references users(id) on delete cascade ,
+    submission_data text,
+    submitted_at timestamptz default now(),
+    grade int
+);
+create table quizzes(
+    id serial primary key ,
+    course_id int references courses(id) on delete cascade ,
+    title varchar,
+    description varchar,
+    created_at timestamptz default now()
+);
+create table quizQuestions(
+    id serial primary key ,
+    quiz_id int references quizzes(id) on delete cascade ,
+    question_text varchar,
+    question_type varchar
+);
+create table quizOptions(
+    id serial primary key ,
+    question_id int references quizQuestions(id) on delete cascade ,
+    option_text varchar,
+    is_correct bool
+);
+create table QuizResults(
+    id serial primary key ,
+    quiz_id int references quizzes(id) on delete cascade ,
+    user_id int references users(id) on delete cascade ,
+    score int check ( score > 0 ),
+    taken_at date
+);
+create table courseFeedback(
+    id serial primary key ,
+    course_id int references courses(id) on delete cascade ,
+    user_id int references users(id) on delete cascade ,
+    rating int check ( rating between 1 and 5),
+    comment varchar,
+    created_ad timestamptz default now()
+);
+create table certificates(
+    id serial primary key ,
+    user_id int references users(id) on delete cascade ,
+    course_id int references courses(id) on delete cascade ,
+    certificate_url text,
+    issued_ad date
+);
+create table payments(
+    id serial primary key ,
+    user_id int references users(id),
+    course_id int references courses(id),
+    amount int check ( amount > 0 ),
+    payment_date timestamptz default now(),
+    payment_method varchar
+);
+create table forum(
+    id serial primary key ,
+    course_id int references courses(id) on delete cascade ,
+    title varchar,
+    created_at timestamptz default now()
+);
+create table forumPosts(
+    id serial primary key ,
+    forum_id int references forum(id) on delete cascade ,
+    user_id int references users(id) on delete cascade ,
+    content varchar,
+    posted_at timestamptz default now()
+);
+create table comments(
+    id serial primary key ,
+    post_id int references forumPosts(id) on delete cascade ,
+    user_id int references users(id) on delete cascade ,
+    content varchar,
+    posted_ad timestamptz default now()
+);
+create table messages(
+    id serial primary key ,
+    sender_id int references users(id) on delete cascade ,
+    receiver_id int references users(id) on delete cascade ,
+    message_text varchar,
+    sent_at timestamptz default now()
+);
+create table badges(
+    id serial primary key ,
+    name varchar,
+    description varchar,
+    icon_url text
+);
+create table userBadges(
+    id serial primary key ,
+    user_id int references users(id) on delete cascade ,
+    badge_id int references badges(id) on delete cascade ,
+    awarded_at timestamptz default now()
+);
+create table leaderboards
+(
+    id           serial primary key,
+    course_id    int references courses (id) on delete cascade,
+    user_id      int references users (id) on delete cascade,
+    score        int check ( score > 0 ),
+    ranking_date timestamptz default now()
+);
+create table surveys(
+    id serial primary key ,
+    course_id int references courses(id) on delete cascade ,
+    title varchar,
+    description varchar,
+    created_at timestamptz default now()
+);
+create table surveyResponses(
+    id serial primary key ,
+    survey_id int references surveys(id) on delete cascade ,
+    user_id int references users(id) on delete cascade ,
+    response varchar,
+    submitted_at timestamptz default now()
+);
+create table activityLog(
+    id serial primary key ,
+    user_id int references users(id),
+    action_type varchar,
+    description varchar,
+    created_at timestamptz default now()
+);
+create table suSolutions(
+    id serial primary key ,
+    comment varchar
+)
